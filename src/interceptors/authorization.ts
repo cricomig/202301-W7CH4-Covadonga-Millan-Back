@@ -11,7 +11,7 @@ export function authorization(
   resp: Response,
   next: NextFunction
 ) {
-  const authHeader = 'Authorization';
+  const authHeader = req.get('Authorization');
 
   try {
     if (!authHeader)
@@ -20,13 +20,11 @@ export function authorization(
     if (!authHeader.startsWith('Bearer'))
       throw new HTTPError(498, 'Token invalid', 'Not Bearer in auth header');
 
-    const token = authHeader.slice(6);
+    const token = authHeader.slice(7);
     const payload = Auth.verifyJWT(token);
     req.info = payload;
     next();
   } catch (error) {
     next(error);
   }
-
-  req.get(authHeader);
 }
