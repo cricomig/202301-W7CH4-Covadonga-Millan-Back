@@ -4,7 +4,7 @@ import { UsersMongoRepo } from './users.mongo.repo';
 jest.mock('./users.mongo.model');
 
 describe('Given JokeMongoRepo', () => {
-  const repo = new UsersMongoRepo();
+  const repo = UsersMongoRepo.getInstance();
   describe('When is called', () => {
     test('Then should be instanced', () => {
       expect(repo).toBeInstanceOf(UsersMongoRepo);

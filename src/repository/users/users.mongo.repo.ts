@@ -6,9 +6,24 @@ import createDebug from 'debug';
 const debug = createDebug('W6:repo');
 
 export class UsersMongoRepo implements Repo<User> {
+  private static instance: UsersMongoRepo;
+
+  public static getInstance(): UsersMongoRepo {
+    if (!UsersMongoRepo.instance) {
+      UsersMongoRepo.instance = new UsersMongoRepo();
+    }
+
+    return UsersMongoRepo.instance;
+  }
+
+  private constructor() {
+    debug('Instantiate');
+  }
+
   async query(): Promise<User[]> {
     debug('query');
-    return [];
+    const data = await UserModel.find().populate('jokes', { owner: 0 });
+    return data;
   }
   async queryId(id: string): Promise<User> {
     debug('queryId');

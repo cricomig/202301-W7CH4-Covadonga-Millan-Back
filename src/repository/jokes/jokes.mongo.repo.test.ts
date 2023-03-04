@@ -4,20 +4,10 @@ import { JokesMongoRepo } from './jokes.mongo.repo';
 jest.mock('./jokes.mongo.models.js');
 
 describe('Given JokeMongoRepo', () => {
-  const repo = new JokesMongoRepo();
+  const repo = JokesMongoRepo.getInstance();
   describe('When is called', () => {
     test('Then should be instanced', () => {
       expect(repo).toBeInstanceOf(JokesMongoRepo);
-    });
-  });
-
-  describe('When query is called', () => {
-    test('Then should return the data', async () => {
-      (JokesModel.find as jest.Mock).mockResolvedValue([]);
-      const result = await repo.query();
-
-      expect(JokesModel.find).toHaveBeenCalled();
-      expect(result).toEqual([]);
     });
   });
 
@@ -54,11 +44,11 @@ describe('Given JokeMongoRepo', () => {
 
   describe('When create is called', () => {
     test('Then it should return an object if we give a valid id', async () => {
-      (JokesModel.create as jest.Mock).mockResolvedValue({
-        joke: ' some',
-        isFunny: true,
-        alreadyKnewIt: false,
-      });
+      const mockData = { joke: ' some', isFunny: true, alreadyKnewIt: false };
+      (JokesModel.create as jest.Mock).mockImplementation(() => ({
+        populate: jest.fn().mockReturnValue(mockData),
+      }));
+
       const newJoke = {
         joke: ' some',
         isFunny: true,
@@ -116,6 +106,20 @@ describe('Given JokeMongoRepo', () => {
 
         expect(async () => repo.delete('1')).rejects.toThrow();
         expect(JokesModel.findByIdAndDelete).toHaveBeenCalled();
+      });
+    });
+
+    describe('When I use query', () => {
+      test('Then should return the datas', async () => {
+        const mockData = [{ chars: 'test' }];
+        (JokesModel.find as jest.Mock).mockImplementation(() => ({
+          populate: jest.fn().mockReturnValue(mockData),
+        }));
+
+        const result = await repo.query();
+
+        expect(JokesModel.find).toHaveBeenCalled();
+        expect(result).toEqual(mockData);
       });
     });
   });

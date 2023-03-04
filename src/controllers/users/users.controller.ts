@@ -13,6 +13,18 @@ export class UsersController {
     debug('Instantiate');
   }
 
+  async getAll(req: Request, resp: Response, next: NextFunction) {
+    try {
+      debug('getAll method');
+      const data = await this.repo.query();
+      resp.json({
+        results: [data],
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async register(req: Request, resp: Response, next: NextFunction) {
     try {
       debug('register');

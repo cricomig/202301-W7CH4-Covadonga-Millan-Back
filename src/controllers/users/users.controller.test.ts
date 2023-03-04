@@ -78,7 +78,6 @@ describe('Given UsersController', () => {
     });
     test('some3', async () => {
       await controller.login(req, resp, next);
-      console.log(req.body);
       (repo.search as jest.Mock).mockResolvedValue([true]);
       (Auth.compare as jest.Mock).mockResolvedValue(false);
 

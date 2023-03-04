@@ -1,32 +1,40 @@
 import { NextFunction, Request, Response } from 'express';
 import { Auth, TokenPayload } from '../helpers/auth.js';
 import { HTTPError } from '../interfaces/errors.js';
+import { JokesMongoRepo } from '../repository/jokes/jokes.mongo.repo.js';
+// const debug = createDebug('W6:interceptor:authorization');
 
 export interface RequestCool extends Request {
   info?: TokenPayload;
 }
 
-export function authorization(
+export async function authorization(
   req: RequestCool,
   resp: Response,
-  next: NextFunction
+  next: NextFunction,
+  jokesRepo: JokesMongoRepo
 ) {
-  const authHeader = 'Authorization';
+  const authHeader = req.get('Authorization');
 
   try {
-    if (!authHeader)
-      throw new HTTPError(498, 'Token expired', 'No value in http header');
-
-    if (!authHeader.startsWith('Bearer'))
-      throw new HTTPError(498, 'Token invalid', 'Not Bearer in auth header');
-
-    const token = authHeader.slice(6);
-    const payload = Auth.verifyJWT(token);
-    req.info = payload;
+    // debug('Called');
+    if (!req.info)
+      throw new HTTPError(
+        498,
+        'Token not found',
+        'Token not found in authorization interceptor'
+      );
+    const userId = req.info.id;
+    const jokeId = req.params.id;
+    const actualJoke = await jokesRepo.queryId(jokeId); //Devuelve una promesa así que todo async
+    if (actualJoke.owner.id !== userId)
+      throw new HTTPError(
+        401,
+        'Not authorized',
+        'Not authorized, different id'
+      );
     next();
   } catch (error) {
     next(error);
   }
-
-  req.get(authHeader);
 }
